@@ -1,0 +1,6 @@
+# Master Netlify Config at Repository Root
+# Instructs Netlify to look inside the 'web' directory for the frontend files
+
+[build]
+  base = "web"
+  publish = "."
