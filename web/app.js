@@ -149,6 +149,7 @@ function filterAndSearch(query, category) {
 // 4. Power Apps Embed Integration
 function loadPowerApp() {
   const container = document.getElementById('powerapps-container');
+  if (!container) return;
   const savedUrl = localStorage.getItem('powerapps_url');
 
   if (savedUrl && savedUrl.trim() !== '') {
@@ -160,19 +161,34 @@ function loadPowerApp() {
               allow="geolocation; microphone; camera">
       </iframe>
     `;
+  } else {
+    container.innerHTML = `
+      <div class="iframe-placeholder">
+        <i class="fa-solid fa-mobile-button placeholder-icon"></i>
+        <h4>Connect Your Power Apps Application</h4>
+        <p>Enter your Power Apps Web Link or App ID in the settings to render your live Canvas App securely inside this Netlify dashboard.</p>
+        <button class="btn btn-accent" onclick="showConfigPrompt('app')">Configure App Connection</button>
+      </div>
+    `;
   }
 }
 
 // 5. Copilot Studio Webchat Integration
 function loadCopilotBot() {
   const container = document.getElementById('webchat-container');
+  if (!container) return;
   const secretOrToken = localStorage.getItem('copilot_secret');
 
   if (secretOrToken && secretOrToken.trim() !== '') {
     container.innerHTML = `<div id="webchat" role="main"></div>`;
     
-    // Check if configuration looks like a Direct Line secret or token URL
-    let directLineConfig = {};
+    // Check if WebChat library is loaded yet
+    if (typeof window.WebChat === 'undefined') {
+      container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Initializing chat client...</div>`;
+      setTimeout(loadCopilotBot, 300);
+      return;
+    }
+    
     if (secretOrToken.startsWith('http')) {
       // Dynamic token URL retrieval (production pattern)
       fetch(secretOrToken)
@@ -195,6 +211,15 @@ function loadCopilotBot() {
         locale: 'en-US'
       }, document.getElementById('webchat'));
     }
+  } else {
+    container.innerHTML = `
+      <div class="iframe-placeholder">
+        <i class="fa-solid fa-comments placeholder-icon"></i>
+        <h4>Connect Your Copilot Studio Webchat</h4>
+        <p>Enter your Bot Direct Line Secret or Token URL in the settings to link your deployed Copilot Studio chatbot.</p>
+        <button class="btn btn-accent" onclick="showConfigPrompt('bot')">Configure Bot Connection</button>
+      </div>
+    `;
   }
 }
 
