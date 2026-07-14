@@ -1,0 +1,96 @@
+kind: AdaptiveDialog
+beginDialog:
+  - kind: OnFallback
+    id: system_fallback_trigger
+    actions:
+      - kind: SendActivity
+        id: fallback_message
+        activity: "I'm sorry, I couldn't find a direct answer to your question in our current FAQ database."
+
+      # Generative Answers fallback (if enabled) - here simulated via a deep search flow
+      - kind: CallFlow
+        id: deep_search_flow
+        flowId: "cr_SearchFAQFlow"
+        input:
+          query: System.Activity.Text
+          email: System.User.Email
+        output:
+          answer: Topic.FallbackAnswer
+          confidence: Topic.FallbackConfidence
+          success: Topic.FallbackSuccess
+
+      - kind: ConditionGroup
+        id: check_fallback_search
+        conditions:
+          # If deep search found something above 0.50, display as suggestion
+          - condition: Topic.FallbackSuccess = true && Topic.FallbackConfidence >= 0.50
+            actions:
+              - kind: SendActivity
+                id: show_fallback_suggestion
+                activity: |
+                  Here is a close match I found:
+                  
+                  {Topic.FallbackAnswer}
+              - kind: Ask
+                id: ask_if_helpful_fallback
+                prompt: "Was this helpful?"
+                variable: Topic.IsFallbackHelpful
+                choices:
+                  - label: Yes
+                  - label: No
+
+              - condition: Topic.IsFallbackHelpful = "Yes"
+                actions:
+                  - kind: SendActivity
+                    activity: "Glad I could help!"
+                  # Log success
+                  - kind: CallFlow
+                    flowId: "cr_LogConversationFlow"
+                    input:
+                      sessionid: System.Conversation.Id
+                      query: System.Activity.Text
+                      response: Topic.FallbackAnswer
+                      confidence: Topic.FallbackConfidence
+                      answered: true
+                      email: System.User.Email
+
+              - condition: Topic.IsFallbackHelpful = "No"
+                actions:
+                  - kind: BeginDialog
+                    dialog: TriggerAdminNotificationDialog
+
+          - condition: true # Else (Fully unanswered)
+            actions:
+              - kind: BeginDialog
+                dialog: TriggerAdminNotificationDialog
+
+# Helper Dialog to handle email validation & triggering notification flow
+kind: AdaptiveDialog
+id: TriggerAdminNotificationDialog
+beginDialog:
+  - actions:
+      - kind: SendActivity
+        activity: "I am going to escalate this to our FAQ Admin team so they can review and add this question."
+        
+      - kind: CallFlow
+        id: trigger_notify_flow
+        flowId: "cr_NotifyAdminFlow"
+        input:
+          question: System.Activity.Text
+          comments: "Escalated from Copilot Studio fallback topic."
+          userEmail: System.User.Email
+          
+      - kind: SendActivity
+        activity: "An administrator has been notified. They will update the FAQ database shortly. Thank you for helping us improve our knowledge base!"
+
+      # Log conversation as unanswered
+      - kind: CallFlow
+        id: log_unanswered_flow
+        flowId: "cr_LogConversationFlow"
+        input:
+          sessionid: System.Conversation.Id
+          query: System.Activity.Text
+          response: "No answer found. Escalated to admin."
+          confidence: 0.00
+          answered: false
+          email: System.User.Email

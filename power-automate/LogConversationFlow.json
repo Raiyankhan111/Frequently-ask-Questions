@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.cognitive.microsoft.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "sessionid": {
+              "type": "string",
+              "title": "Session ID"
+            },
+            "query": {
+              "type": "string",
+              "title": "User Query"
+            },
+            "response": {
+              "type": "string",
+              "title": "Bot Response"
+            },
+            "confidence": {
+              "type": "number",
+              "title": "Confidence Score"
+            },
+            "answered": {
+              "type": "boolean",
+              "title": "Is Answered"
+            },
+            "email": {
+              "type": "string",
+              "title": "User Email"
+            }
+          },
+          "required": ["sessionid", "query", "answered"]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Write_to_Dataverse_ChatLog": {
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_commondataserviceforapps",
+          "operationId": "CreateRecord",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+        },
+        "parameters": {
+          "entityName": "cr_FAQChatLogs",
+          "item/cr_sessionid": "@triggerBody()?['sessionid']",
+          "item/cr_userquery": "@triggerBody()?['query']",
+          "item/cr_botresponse": "@triggerBody()?['response']",
+          "item/cr_confidence": "@triggerBody()?['confidence']",
+          "item/cr_isanswered": "@triggerBody()?['answered']",
+          "item/cr_useremail": "@triggerBody()?['email']"
+        }
+      }
+    },
+    "Respond_to_Copilot_Studio": {
+      "runAfter": {
+        "Write_to_Dataverse_ChatLog": ["Succeeded"]
+      },
+      "type": "Response",
+      "inputs": {
+        "statusCode": 200,
+        "body": {
+          "logid": "@outputs('Write_to_Dataverse_ChatLog')?['body/cr_faqchatlogid']",
+          "status": "Success"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "logid": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

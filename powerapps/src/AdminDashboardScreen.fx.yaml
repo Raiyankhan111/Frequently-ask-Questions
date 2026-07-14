@@ -1,0 +1,312 @@
+- AdminDashboardScreen As screen:
+    Fill: =gblTheme.Background
+    OnVisible: |
+      =// Security verification
+       If(!gblIsAdmin, Navigate(UserPortalScreen, ScreenTransition.None));
+       Refresh(cr_FAQs);
+       Refresh(cr_FAQCategories);
+       UpdateContext({locAdminSearchText: ""});
+       UpdateContext({locIsNewMode: false});
+       UpdateContext({locSelectedAdminFAQ: First(cr_FAQs)});
+
+    Controls:
+      # Header Panel
+      - AdminHeaderContainer As groupContainer:
+          Width: =Parent.Width
+          Height: =70
+          Fill: =gblTheme.Primary
+          
+          Controls:
+            - BackToPortalBtn As button:
+                Text: ="Back to Portal"
+                X: =20
+                Y: =15
+                Width: =140
+                Height: =40
+                Fill: =gblTheme.PrimaryLight
+                Color: =ColorValue("#FFFFFF")
+                OnSelect: =Navigate(UserPortalScreen, ScreenTransition.UnCover)
+                
+            - AdminHeaderTitle As label:
+                Text: ="FAQ Enterprise Admin Console"
+                Font: =gblFont.Family
+                Size: =18
+                FontWeight: =FontWeight.Bold
+                Color: =ColorValue("#FFFFFF")
+                X: =180
+                Y: =20
+                Width: =400
+                Height: =30
+
+            # Bulk Operation Controls
+            - BulkImportBtn As button:
+                Text: ="Bulk Import (CSV)"
+                X: =Parent.Width - 320
+                Y: =15
+                Width: =140
+                Height: =40
+                Fill: =gblTheme.Warning
+                Color: =ColorValue("#0F172A")
+                OnSelect: |
+                  =// Trigger Power Automate Flow for Bulk Import (Flow JSON configuration in Phase 4)
+                   UpdateContext({locShowImportModal: true})
+
+            - BulkExportBtn As button:
+                Text: ="Export All (CSV)"
+                X: =Parent.Width - 170
+                Y: =15
+                Width: =140
+                Height: =40
+                Fill: =gblTheme.Success
+                Color: =ColorValue("#FFFFFF")
+                OnSelect: |
+                  =// Downloads Excel/CSV of active records
+                   Download("https://prod-link.powerautomate.com/export?tenant=company")
+
+      # Main Workspace Grid (Left List, Right Form)
+      - AdminMainBody As groupContainer:
+          Y: =70
+          Width: =Parent.Width
+          Height: =Parent.Height - 70
+          Layout: =Layout.Horizontal
+          
+          Controls:
+            # LEFT SIDE: Search Box & List of FAQs
+            - AdminLeftPane As groupContainer:
+                Width: =Parent.Width * 0.40
+                Height: =Parent.Height
+                PaddingLeft: =20
+                PaddingRight: =20
+                PaddingTop: =20
+                
+                Controls:
+                  - AdminSearchBox As text:
+                      Default: =""
+                      HintText: ="Quick search FAQ titles..."
+                      Width: =Parent.Width - 110
+                      Height: =40
+                      OnType: =UpdateContext({locAdminSearchText: Self.Text})
+
+                  - CreateNewBtn As button:
+                      Text: ="+"
+                      X: =Parent.Width - 90
+                      Width: =80
+                      Height: =40
+                      Fill: =gblTheme.Accent
+                      Color: =ColorValue("#FFFFFF")
+                      OnSelect: |
+                        =UpdateContext({locIsNewMode: true});
+                         UpdateContext({locSelectedAdminFAQ: Blank()});
+                         Reset(AdminQuestionInput);
+                         Reset(AdminAnswerInput);
+                         Reset(AdminKeywordsInput);
+                         Reset(AdminTagsInput);
+                         Reset(AdminCategoryDropdown);
+                         Reset(AdminPriorityDropdown);
+                         Reset(AdminStatusDropdown)
+
+                  - AdminFAQGallery As gallery:
+                      Items: |
+                        =Search(
+                            cr_FAQs,
+                            AdminSearchBox.Text,
+                            "cr_question", "cr_keywords"
+                         )
+                      Y: =55
+                      Width: =Parent.Width
+                      Height: =Parent.Height - 80
+                      TemplateSize: =75
+                      
+                      Controls:
+                        - AdminFAQCard As groupContainer:
+                            Width: =Parent.Width
+                            Height: =65
+                            Fill: =If(ThisItem.cr_faqid = locSelectedAdminFAQ.cr_faqid, gblTheme.GrayBg, gblTheme.CardBg)
+                            OnSelect: |
+                              =UpdateContext({locIsNewMode: false});
+                               UpdateContext({locSelectedAdminFAQ: ThisItem});
+                               // Reset inputs to load values
+                               Reset(AdminQuestionInput);
+                               Reset(AdminAnswerInput);
+                               Reset(AdminKeywordsInput);
+                               Reset(AdminTagsInput);
+                               Reset(AdminCategoryDropdown);
+                               Reset(AdminPriorityDropdown);
+                               Reset(AdminStatusDropdown)
+                            
+                            Controls:
+                              - AdminCardQuestion As label:
+                                  Text: =ThisItem.cr_question
+                                  Size: =12
+                                  FontWeight: =FontWeight.Semibold
+                                  Color: =gblTheme.TextDark
+                                  Width: =Parent.Width - 20
+                                  Height: =20
+                                  
+                              - AdminCardStatusBadge As label:
+                                  Text: =Text(ThisItem.cr_status) & " | " & Text(ThisItem.cr_priority)
+                                  Size: =10
+                                  Color: =If(ThisItem.cr_status = 'cr_faq_status (cr_FAQ)'.Published, gblTheme.Success, gblTheme.TextMuted)
+                                  Y: =25
+                                  Width: =200
+                                  Height: =20
+
+            # RIGHT SIDE: Editor Form
+            - AdminRightPane As groupContainer:
+                Width: =Parent.Width * 0.60
+                Height: =Parent.Height
+                PaddingLeft: =20
+                PaddingRight: =20
+                PaddingTop: =20
+                Fill: =gblTheme.CardBg
+                
+                Controls:
+                  - FormHeader As label:
+                      Text: =If(locIsNewMode, "Add New FAQ Record", "Edit FAQ Record Details")
+                      FontWeight: =FontWeight.Bold
+                      Size: =16
+                      Color: =gblTheme.TextDark
+                      Height: =30
+
+                  # Fields
+                  - FieldLabelQuestion As label:
+                      Text: ="Question"
+                      FontWeight: =FontWeight.Semibold
+                      Y: =40
+                      Height: =20
+
+                  - AdminQuestionInput As text:
+                      Default: =If(locIsNewMode, "", locSelectedAdminFAQ.cr_question)
+                      Y: =65
+                      Width: =Parent.Width
+                      Height: =40
+
+                  - FieldLabelAnswer As label:
+                      Text: ="Answer (Rich Text Support)"
+                      FontWeight: =FontWeight.Semibold
+                      Y: =115
+                      Height: =20
+
+                  - AdminAnswerInput As richTextEditor:
+                      Default: =If(locIsNewMode, "", locSelectedAdminFAQ.cr_answer)
+                      Y: =140
+                      Width: =Parent.Width
+                      Height: =200
+
+                  # Split columns for attributes
+                  - DropdownsContainer As groupContainer:
+                      Y: =355
+                      Width: =Parent.Width
+                      Height: =140
+                      Layout: =Layout.Horizontal
+                      
+                      Controls:
+                        - ColCategory As groupContainer:
+                            Width: =Parent.Width * 0.5
+                            Height: =140
+                            Controls:
+                              - LblCategory As label:
+                                  Text: ="Category"
+                                  FontWeight: =FontWeight.Semibold
+                              - AdminCategoryDropdown As dropdown:
+                                  Items: =cr_FAQCategories
+                                  DefaultSelectedItems: =Table(If(locIsNewMode, Blank(), locSelectedAdminFAQ.cr_categoryid))
+                                  Y: =25
+                                  Width: =Parent.Width - 10
+                                  Height: =35
+
+                        - ColPriority As groupContainer:
+                            Width: =Parent.Width * 0.5
+                            Height: =140
+                            Controls:
+                              - LblPriority As label:
+                                  Text: ="Priority"
+                                  FontWeight: =FontWeight.Semibold
+                              - AdminPriorityDropdown As dropdown:
+                                  Items: =Choices(cr_FAQs.cr_priority)
+                                  DefaultSelectedItems: =Table(If(locIsNewMode, 'cr_faq_priority (cr_FAQ)'.Medium, locSelectedAdminFAQ.cr_priority))
+                                  Y: =25
+                                  Width: =Parent.Width - 10
+                                  Height: =35
+
+                  # Keywords & Tags
+                  - TextFieldsContainer As groupContainer:
+                      Y: =440
+                      Width: =Parent.Width
+                      Height: =90
+                      
+                      Controls:
+                        - AdminKeywordsInput As text:
+                            Default: =If(locIsNewMode, "", locSelectedAdminFAQ.cr_keywords)
+                            HintText: ="Keywords (comma separated)"
+                            Width: =Parent.Width * 0.5 - 10
+                            Height: =40
+                            
+                        - AdminTagsInput As text:
+                            Default: =If(locIsNewMode, "", locSelectedAdminFAQ.cr_tags)
+                            HintText: ="Tags (semicolon separated, e.g. #it;#login)"
+                            X: =Parent.Width * 0.5
+                            Width: =Parent.Width * 0.5
+                            Height: =40
+
+                        - AdminStatusDropdown As dropdown:
+                            Items: =Choices(cr_FAQs.cr_status)
+                            DefaultSelectedItems: =Table(If(locIsNewMode, 'cr_faq_status (cr_FAQ)'.Draft, locSelectedAdminFAQ.cr_status))
+                            Y: =45
+                            Width: =200
+                            Height: =35
+
+                  # Action Buttons
+                  - ActionBtnsContainer As groupContainer:
+                      Y: =540
+                      Width: =Parent.Width
+                      Height: =60
+                      
+                      Controls:
+                        - SaveFAQBtn As button:
+                            Text: ="Save Record"
+                            Width: =150
+                            Height: =40
+                            Fill: =gblTheme.Success
+                            Color: =ColorValue("#FFFFFF")
+                            OnSelect: |
+                              =If(locIsNewMode,
+                                  // INSERT NEW FAQ
+                                  Set(locNewRecord, Patch(cr_FAQs, Defaults(cr_FAQs), {
+                                      cr_question: AdminQuestionInput.Text,
+                                      cr_answer: AdminAnswerInput.HtmlText,
+                                      cr_categoryid: AdminCategoryDropdown.Selected,
+                                      cr_keywords: AdminKeywordsInput.Text,
+                                      cr_tags: AdminTagsInput.Text,
+                                      cr_priority: AdminPriorityDropdown.Selected.Value,
+                                      cr_status: AdminStatusDropdown.Selected.Value
+                                  }));
+                                  UpdateContext({locSelectedAdminFAQ: locNewRecord});
+                                  UpdateContext({locIsNewMode: false});
+                                  Notify("New FAQ successfully created!", NotificationType.Success),
+                                  
+                                  // UPDATE EXISTING FAQ
+                                  Patch(cr_FAQs, locSelectedAdminFAQ, {
+                                      cr_question: AdminQuestionInput.Text,
+                                      cr_answer: AdminAnswerInput.HtmlText,
+                                      cr_categoryid: AdminCategoryDropdown.Selected,
+                                      cr_keywords: AdminKeywordsInput.Text,
+                                      cr_tags: AdminTagsInput.Text,
+                                      cr_priority: AdminPriorityDropdown.Selected.Value,
+                                      cr_status: AdminStatusDropdown.Selected.Value
+                                  });
+                                  Notify("FAQ successfully updated!", NotificationType.Success)
+                               )
+
+                        - DeleteFAQBtn As button:
+                            Text: ="Delete FAQ"
+                            Visible: =!locIsNewMode
+                            X: =170
+                            Width: =150
+                            Height: =40
+                            Fill: =gblTheme.Error
+                            Color: =ColorValue("#FFFFFF")
+                            OnSelect: |
+                              =Remove(cr_FAQs, locSelectedAdminFAQ);
+                               UpdateContext({locSelectedAdminFAQ: First(cr_FAQs)});
+                               Notify("FAQ record deleted.", NotificationType.Warning)

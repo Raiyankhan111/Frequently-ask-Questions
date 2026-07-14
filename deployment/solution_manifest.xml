@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImportExportXml version="9.2.23122.0" SolutionPackageVersion="9.2" languagecode="1033" GeneratedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SolutionManifest>
+    <UniqueName>EnterpriseFAQCopilotSolution</UniqueName>
+    <LocalizedNames>
+      <LocalizedName description="Enterprise FAQ Copilot Solution" languagecode="1033" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Production FAQ Solution containing Dataverse schemas, responsive Canvas App, Copilot Studio dialogs, and admin automation flows." languagecode="1033" />
+    </Descriptions>
+    <Version>1.0.0.0</Version>
+    
+    <!-- Solution Publisher Details -->
+    <PublisherInfo>
+      <UniqueName>custom_publisher</UniqueName>
+      <LocalizedNames>
+        <LocalizedName description="Enterprise IT Solutions" languagecode="1033" />
+      </LocalizedNames>
+      <Descriptions>
+        <Description description="Internal corporate IT and automation team publisher." languagecode="1033" />
+      </Descriptions>
+      <EMailAddress>it.admin@company.com</EMailAddress>
+      <SupportingWebsiteUrl>https://intranet.company.com/it</SupportingWebsiteUrl>
+      <CustomizationPrefix>cr</CustomizationPrefix>
+      <CustomizationOptionValuePrefix>10000</CustomizationOptionValuePrefix>
+    </PublisherInfo>
+
+    <!-- Component Registry -->
+    <RootComponents>
+      <!-- Dataverse Entities -->
+      <RootComponent type="1" schemaName="cr_FAQCategory" behavior="0" />
+      <RootComponent type="1" schemaName="cr_FAQ" behavior="0" />
+      <RootComponent type="1" schemaName="cr_FAQFeedback" behavior="0" />
+      <RootComponent type="1" schemaName="cr_FAQChatLog" behavior="0" />
+      
+      <!-- Power Apps Canvas App -->
+      <RootComponent type="300" schemaName="cr_faq_portal_app_da991" behavior="0" />
+      
+      <!-- Power Automate Cloud Flows -->
+      <RootComponent type="29" id="{89d8f34d-1144-ec11-b6e5-00224823c91a}" schemaName="cr_ImportFAQsFlow" behavior="0" />
+      <RootComponent type="29" id="{c0ab617a-2444-ec11-b6e5-00224823c91a}" schemaName="cr_NotifyAdminFlow" behavior="0" />
+      <RootComponent type="29" id="{14cc0c0d-3244-ec11-b6e5-00224823c91a}" schemaName="cr_LogConversationFlow" behavior="0" />
+      <RootComponent type="29" id="{90dd524a-4144-ec11-b6e5-00224823c91a}" schemaName="cr_StoreFeedbackFlow" behavior="0" />
+      
+      <!-- Copilot Studio Virtual Agent Bot & Dialogs -->
+      <RootComponent type="225" schemaName="cr_faq_chatbot_bot" behavior="0" />
+      <RootComponent type="226" schemaName="cr_SearchFAQTopic" behavior="0" />
+      <RootComponent type="226" schemaName="cr_FallbackTopic" behavior="0" />
+      <RootComponent type="226" schemaName="cr_SuggestRelatedFAQs" behavior="0" />
+    </RootComponents>
+
+    <!-- Dependencies required by the solution -->
+    <MissingDependencies>
+      <MissingDependency>
+        <Required type="1" schemaName="systemuser" displayName="System User" />
+        <Dependent type="1" schemaName="cr_FAQFeedback" displayName="FAQ Feedback" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="29" schemaName="shared_office365" displayName="Office 365 Outlook Connection Reference" />
+        <Dependent type="29" schemaName="cr_NotifyAdminFlow" displayName="Notify Admin Flow" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="29" schemaName="shared_teams" displayName="Microsoft Teams Connection Reference" />
+        <Dependent type="29" schemaName="cr_NotifyAdminFlow" displayName="Notify Admin Flow" />
+      </MissingDependency>
+    </MissingDependencies>
+  </SolutionManifest>
+</ImportExportXml>

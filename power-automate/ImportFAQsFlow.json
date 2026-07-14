@@ -1,0 +1,182 @@
+{
+  "$schema": "https://schema.cognitive.microsoft.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SharePointSiteUrl": {
+      "defaultValue": "https://company.sharepoint.com/sites/FAQPortal",
+      "type": "String"
+    },
+    "LibraryName": {
+      "defaultValue": "FAQImports",
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "When_a_file_is_created_in_a_folder": {
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_sharepointonline",
+          "operationId": "GetFileCreated",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+        },
+        "parameters": {
+          "dataset": "@parameters('SharePointSiteUrl')",
+          "folderId": "@parameters('LibraryName')"
+        }
+      }
+    }
+  },
+  "actions": {
+    "Get_file_content": {
+      "runAfter": {},
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_sharepointonline",
+          "operationId": "GetFileContent",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+        },
+        "parameters": {
+          "dataset": "@parameters('SharePointSiteUrl')",
+          "id": "@triggerOutputs()?['body/Id']"
+        }
+      }
+    },
+    "Convert_to_String": {
+      "runAfter": {
+        "Get_file_content": ["Succeeded"]
+      },
+      "type": "InitializeVariable",
+      "inputs": {
+        "variables": [
+          {
+            "name": "CSVString",
+            "type": "string",
+            "value": "@base64ToString(body('Get_file_content'))"
+          }
+        ]
+      }
+    },
+    "Split_by_NewLine": {
+      "runAfter": {
+        "Convert_to_String": ["Succeeded"]
+      },
+      "type": "InitializeVariable",
+      "inputs": {
+        "variables": [
+          {
+            "name": "CSVRows",
+            "type": "array",
+            "value": "@split(variables('CSVString'), decodeUriComponent('%0A'))"
+          }
+        ]
+      }
+    },
+    "Process_Rows": {
+      "runAfter": {
+        "Split_by_NewLine": ["Succeeded"]
+      },
+      "type": "Foreach",
+      "foreach": "@skip(variables('CSVRows'), 1)",
+      "actions": {
+        "Parse_Row_Cells": {
+          "type": "Compose",
+          "inputs": "@split(item(), ',')"
+        },
+        "Condition_Check_Length": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "greater": [
+                  "@length(outputs('Parse_Row_Cells'))",
+                  5
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Find_Category_in_Dataverse": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr_FAQCategories",
+                  "$filter": "cr_name eq '@{outputs('Parse_Row_Cells')[3]}'"
+                }
+              }
+            },
+            "Condition_Category_Exists": {
+              "runAfter": {
+                "Find_Category_in_Dataverse": ["Succeeded"]
+              },
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(outputs('Find_Category_in_Dataverse')?['body/value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Create_Category_Record": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "cr_FAQCategories",
+                      "item/cr_name": "@outputs('Parse_Row_Cells')[3]",
+                      "item/cr_description": "Auto-created during bulk import."
+                    }
+                  }
+                }
+              }
+            },
+            "Get_Target_Category_ID": {
+              "runAfter": {
+                "Condition_Category_Exists": ["Succeeded"]
+              },
+              "type": "Compose",
+              "inputs": "@if(equals(length(outputs('Find_Category_in_Dataverse')?['body/value']), 0), outputs('Create_Category_Record')?['body/cr_faqcategoryid'], outputs('Find_Category_in_Dataverse')?['body/value'][0]['cr_faqcategoryid'])"
+            },
+            "Insert_FAQ_Record": {
+              "runAfter": {
+                "Get_Target_Category_ID": ["Succeeded"]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "CreateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cr_FAQs",
+                  "item/cr_question": "@outputs('Parse_Row_Cells')[1]",
+                  "item/cr_answer": "@outputs('Parse_Row_Cells')[2]",
+                  "item/cr_categoryid@odata.bind": "/cr_FAQCategories(@{outputs('Get_Target_Category_ID')})",
+                  "item/cr_keywords": "@outputs('Parse_Row_Cells')[5]",
+                  "item/cr_tags": "@outputs('Parse_Row_Cells')[6]",
+                  "item/cr_priority": "@if(equals(outputs('Parse_Row_Cells')[7], 'High'), 100000000, if(equals(outputs('Parse_Row_Cells')[7], 'Low'), 100000002, 100000001))",
+                  "item/cr_status": 100000001
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

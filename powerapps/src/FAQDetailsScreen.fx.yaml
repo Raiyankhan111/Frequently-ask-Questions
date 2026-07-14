@@ -1,0 +1,237 @@
+- FAQDetailsScreen As screen:
+    Fill: =gblTheme.Background
+    OnVisible: |
+      =// Initialize feedback variables
+       UpdateContext({locFeedbackSubmitted: false});
+       UpdateContext({locFeedbackRating: Blank()});
+       UpdateContext({locCommentText: ""});
+
+    Controls:
+      # Header Panel
+      - DetailHeaderContainer As groupContainer:
+          Width: =Parent.Width
+          Height: =70
+          Fill: =gblTheme.Primary
+          
+          Controls:
+            - BackButton As icon:
+                Icon: =Icon.BackArrow
+                Color: =ColorValue("#FFFFFF")
+                X: =20
+                Y: =20
+                Width: =30
+                Height: =30
+                OnSelect: =Navigate(UserPortalScreen, ScreenTransition.UnCover)
+                
+            - DetailTitle As label:
+                Text: ="FAQ Details"
+                Font: =gblFont.Family
+                Size: =18
+                FontWeight: =FontWeight.Bold
+                Color: =ColorValue("#FFFFFF")
+                X: =70
+                Y: =20
+                Width: =300
+                Height: =30
+
+            - FavoriteToggleBtn As icon:
+                Icon: =If(!IsBlank(LookUp(colFavorites, cr_faqid = gblSelectedFAQ.cr_faqid)), Icon.Star, Icon.StarOpen)
+                Color: =ColorValue("#F59E0B") # Gold Star
+                X: =Parent.Width - 60
+                Y: =20
+                Width: =30
+                Height: =30
+                OnSelect: |
+                  =If(!IsBlank(LookUp(colFavorites, cr_faqid = gblSelectedFAQ.cr_faqid)),
+                      // Remove from favorites
+                      Remove(colFavorites, LookUp(colFavorites, cr_faqid = gblSelectedFAQ.cr_faqid)),
+                      // Add to favorites
+                      Collect(colFavorites, gblSelectedFAQ)
+                   );
+                   SaveData(colFavorites, "EnterpriseFAQFavorites")
+
+      # Main Content Area (Split layout: Left Details, Right Related FAQs)
+      - DetailMainBody As groupContainer:
+          Y: =70
+          Width: =Parent.Width
+          Height: =Parent.Height - 70
+          Layout: =Layout.Horizontal
+          
+          Controls:
+            # Left Pane: Question & Rich Answer & Feedback
+            - AnswerDetailsPane As groupContainer:
+                Width: =Parent.Width * 0.65
+                Height: =Parent.Height
+                PaddingLeft: =40
+                PaddingRight: =20
+                PaddingTop: =30
+                
+                Controls:
+                  - CategoryBadge As label:
+                      Text: =Upper(gblSelectedFAQ.cr_categoryid.cr_name)
+                      Size: =11
+                      FontWeight: =FontWeight.Bold
+                      Color: =gblTheme.Accent
+                      Height: =20
+                      Width: =200
+
+                  - QuestionTitle As label:
+                      Text: =gblSelectedFAQ.cr_question
+                      FontWeight: =FontWeight.Bold
+                      Size: =20
+                      Color: =gblTheme.TextDark
+                      Y: =25
+                      Width: =Parent.Width - 40
+                      Height: =60
+                      Wrap: =true
+
+                  # Rich Text Answer Viewer
+                  - AnswerHtmlViewer As htmlViewer:
+                      HtmlText: =gblSelectedFAQ.cr_answer
+                      Y: =95
+                      Width: =Parent.Width - 40
+                      Height: =Parent.Height - 300
+                      BorderThickness: =1
+                      BorderColor: =gblTheme.BorderColor
+                      PaddingLeft: =15
+                      PaddingRight: =15
+                      PaddingTop: =15
+                      PaddingBottom: =15
+
+                  # Feedback Section
+                  - FeedbackPanel As groupContainer:
+                      Y: =Parent.Height - 190
+                      Width: =Parent.Width - 40
+                      Height: =180
+                      Fill: =gblTheme.GrayBg
+                      RadiusTopLeft: =8
+                      RadiusTopRight: =8
+                      RadiusBottomLeft: =8
+                      RadiusBottomRight: =8
+                      
+                      Controls:
+                        - FeedbackPrompt As label:
+                            Text: =If(locFeedbackSubmitted, "Thank you for your feedback!", "Was this answer helpful?")
+                            FontWeight: =FontWeight.Semibold
+                            Size: =13
+                            X: =20
+                            Y: =15
+                            Width: =300
+                            Height: =25
+                        
+                        # Buttons visible only before submission
+                        - YesFeedbackBtn As button:
+                            Text: ="Yes, it helped"
+                            Visible: =!locFeedbackSubmitted
+                            X: =20
+                            Y: =50
+                            Width: =130
+                            Height: =35
+                            Fill: =gblTheme.Success
+                            Color: =ColorValue("#FFFFFF")
+                            OnSelect: |
+                              =UpdateContext({locFeedbackRating: true});
+                               UpdateContext({locFeedbackSubmitted: true});
+                               // Submit direct patch to Dataverse
+                               Patch(cr_FAQFeedbacks, Defaults(cr_FAQFeedbacks), {
+                                   cr_faqid: gblSelectedFAQ,
+                                   cr_ishelpful: true,
+                                   cr_useremail: gblCurrentUser.Email,
+                                   cr_comments: "User marked as helpful"
+                               })
+
+                        - NoFeedbackBtn As button:
+                            Text: ="No, need details"
+                            Visible: =!locFeedbackSubmitted
+                            X: =160
+                            Y: =50
+                            Width: =130
+                            Height: =35
+                            Fill: =gblTheme.Error
+                            Color: =ColorValue("#FFFFFF")
+                            OnSelect: |
+                              =UpdateContext({locFeedbackRating: false});
+                               // Open details input
+                               UpdateContext({locFeedbackSubmitted: false})
+
+                        # Comment box appearing on "No" selection
+                        - CommentTextBox As text:
+                            Mode: =TextMode.MultiLine
+                            Visible: =!IsBlank(locFeedbackRating) && !locFeedbackRating && !locFeedbackSubmitted
+                            X: =20
+                            Y: =95
+                            Width: =Parent.Width - 40
+                            Height: =50
+                            HintText: ="What was missing? How can we improve this answer?"
+                            OnType: =UpdateContext({locCommentText: Self.Text})
+
+                        - SubmitNegativeFeedbackBtn As button:
+                            Text: ="Submit Feedback"
+                            Visible: =!IsBlank(locFeedbackRating) && !locFeedbackRating && !locFeedbackSubmitted
+                            X: =20
+                            Y: =150
+                            Width: =150
+                            Height: =25
+                            Fill: =gblTheme.Primary
+                            Color: =ColorValue("#FFFFFF")
+                            OnSelect: |
+                              =UpdateContext({locFeedbackSubmitted: true});
+                               Patch(cr_FAQFeedbacks, Defaults(cr_FAQFeedbacks), {
+                                   cr_faqid: gblSelectedFAQ,
+                                   cr_ishelpful: false,
+                                   cr_useremail: gblCurrentUser.Email,
+                                   cr_comments: locCommentText
+                               });
+                               // If missing details, we trigger a Power Automate flow in production, or log the feedback
+                               Notify("Feedback submitted.", NotificationType.Success)
+
+            # Right Pane: Suggested Related FAQs
+            - RelatedPane As groupContainer:
+                Width: =Parent.Width * 0.35
+                Height: =Parent.Height
+                PaddingLeft: =20
+                PaddingRight: =40
+                PaddingTop: =30
+                
+                Controls:
+                  - RelatedHeader As label:
+                      Text: ="Related FAQs"
+                      FontWeight: =FontWeight.Bold
+                      Size: =14
+                      Color: =gblTheme.TextDark
+                      Height: =25
+                      
+                  - RelatedFAQGallery As gallery:
+                      # Delegable search for FAQs matching the same category, excluding current FAQ
+                      Items: |
+                        =Filter(
+                            cr_FAQs,
+                            cr_categoryid.cr_faqcategoryid = gblSelectedFAQ.cr_categoryid.cr_faqcategoryid && 
+                            cr_faqid <> gblSelectedFAQ.cr_faqid && 
+                            cr_status = 'cr_faq_status (cr_FAQ)'.Published
+                         )
+                      Y: =35
+                      Width: =Parent.Width
+                      Height: =Parent.Height - 60
+                      TemplateSize: =70
+                      
+                      Controls:
+                        - RelatedCard As groupContainer:
+                            Width: =Parent.Width
+                            Height: =60
+                            Fill: =gblTheme.CardBg
+                            
+                            Controls:
+                              - RelatedTitle As label:
+                                  Text: =ThisItem.cr_question
+                                  Size: =12
+                                  FontWeight: =FontWeight.Medium
+                                  Color: =gblTheme.TextDark
+                                  Width: =Parent.Width - 10
+                                  Height: =45
+                                  OnSelect: |
+                                    =Set(gblSelectedFAQ, ThisItem);
+                                     // Refresh feedback state
+                                     UpdateContext({locFeedbackSubmitted: false});
+                                     UpdateContext({locFeedbackRating: Blank()});
+                                     UpdateContext({locCommentText: ""})

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Entity>
+  <Name LocalizedName="FAQ Chat Log" OriginalName="cr_FAQChatLog">cr_FAQChatLog</Name>
+  <ObjectTypeCode>10103</ObjectTypeCode>
+  <Attributes>
+    <!-- Primary Key -->
+    <Attribute PhysicalName="cr_faqchatlogid">
+      <Type>uniqueidentifier</Type>
+      <Name>FAQ Chat Log ID</Name>
+      <Description>Unique identifier for entity instances</Description>
+      <RequiredLevel>SystemRequired</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>0</IsAuditEnabled>
+    </Attribute>
+    
+    <!-- Session ID -->
+    <Attribute PhysicalName="cr_sessionid">
+      <Type>nvarchar</Type>
+      <Length>100</Length>
+      <Name>Session ID</Name>
+      <Description>Unique identifier for the chatbot conversation session.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>0</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- User Query -->
+    <Attribute PhysicalName="cr_userquery">
+      <Type>ntext</Type>
+      <Length>2000</Length>
+      <Name>User Query</Name>
+      <Description>The natural language question asked by the user.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>0</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- Bot Response -->
+    <Attribute PhysicalName="cr_botresponse">
+      <Type>ntext</Type>
+      <Length>4000</Length>
+      <Name>Bot Response</Name>
+      <Description>The answer/response provided by the chatbot.</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>0</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- Confidence Score -->
+    <Attribute PhysicalName="cr_confidence">
+      <Type>decimal</Type>
+      <Precision>2</Precision>
+      <MinValue>0.00</MinValue>
+      <MaxValue>1.00</MaxValue>
+      <Name>Confidence Score</Name>
+      <Description>The NLU matching confidence score (0.00 to 1.00).</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>0</IsAuditEnabled>
+    </Attribute>
+
+    <!-- Was Answered (Boolean) -->
+    <Attribute PhysicalName="cr_isanswered">
+      <Type>boolean</Type>
+      <Name>Is Answered</Name>
+      <Description>Indicates if the user query was resolved successfully by the bot.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>0</IsAuditEnabled>
+      <OptionSet Name="cr_chatlog_answered">
+        <Option value="1">
+          <Label>Yes</Label>
+        </Option>
+        <Option value="0">
+          <Label>No</Label>
+        </Option>
+      </OptionSet>
+    </Attribute>
+
+    <!-- User Email -->
+    <Attribute PhysicalName="cr_useremail">
+      <Type>nvarchar</Type>
+      <Length>150</Length>
+      <Name>User Email</Name>
+      <Description>Email of the user chatting with the bot.</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>0</IsAuditEnabled>
+    </Attribute>
+
+    <!-- Standard Metadata Fields -->
+    <Attribute PhysicalName="createdon">
+      <Type>datetime</Type>
+      <Name>Created On</Name>
+      <Description>Date and time when the chat log was created.</Description>
+    </Attribute>
+    <Attribute PhysicalName="modifiedon">
+      <Type>datetime</Type>
+      <Name>Modified On</Name>
+      <Description>Date and time when the chat log was last modified.</Description>
+    </Attribute>
+    <Attribute PhysicalName="statecode">
+      <Type>state</Type>
+      <Name>Status</Name>
+      <Description>State of the chat log record (Active/Inactive)</Description>
+    </Attribute>
+    <Attribute PhysicalName="statuscode">
+      <Type>status</Type>
+      <Name>Status Reason</Name>
+      <Description>Reason for the status of the chat log record</Description>
+    </Attribute>
+  </Attributes>
+</Entity>

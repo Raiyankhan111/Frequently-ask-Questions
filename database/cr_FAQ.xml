@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Entity>
+  <Name LocalizedName="FAQ" OriginalName="cr_FAQ">cr_FAQ</Name>
+  <ObjectTypeCode>10101</ObjectTypeCode>
+  <Attributes>
+    <!-- Primary Key -->
+    <Attribute PhysicalName="cr_faqid">
+      <Type>uniqueidentifier</Type>
+      <Name>FAQ ID</Name>
+      <Description>Unique identifier for entity instances</Description>
+      <RequiredLevel>SystemRequired</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+    </Attribute>
+    
+    <!-- Primary Name Field (Question) -->
+    <Attribute PhysicalName="cr_question">
+      <Type>nvarchar</Type>
+      <Length>500</Length>
+      <Name>Question</Name>
+      <Description>The Frequently Asked Question text.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- Answer (Rich Text) -->
+    <Attribute PhysicalName="cr_answer">
+      <Type>ntext</Type>
+      <Length>4000</Length>
+      <Name>Answer</Name>
+      <Description>The answer to the FAQ. Supports rich text formatting.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- Category Lookup -->
+    <Attribute PhysicalName="cr_categoryid">
+      <Type>lookup</Type>
+      <ReferencedEntityName>cr_FAQCategory</ReferencedEntityName>
+      <Name>Category</Name>
+      <Description>Lookup to the FAQ Category or Subcategory.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- Keywords (Comma-separated for search amplification) -->
+    <Attribute PhysicalName="cr_keywords">
+      <Type>nvarchar</Type>
+      <Length>1000</Length>
+      <Name>Keywords</Name>
+      <Description>Comma-separated keywords to help users search and find this FAQ.</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- Tags (Semicolon-separated tags for filtering) -->
+    <Attribute PhysicalName="cr_tags">
+      <Type>nvarchar</Type>
+      <Length>250</Length>
+      <Name>Tags</Name>
+      <Description>Tags used to group FAQs (e.g., #wfh, #billing, #password).</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- Priority Choice Field -->
+    <Attribute PhysicalName="cr_priority">
+      <Type>picklist</Type>
+      <Name>Priority</Name>
+      <Description>FAQ Priority (High, Medium, Low)</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <OptionSet Name="cr_faq_priority">
+        <Option value="100000000">
+          <Label>High</Label>
+        </Option>
+        <Option value="100000001">
+          <Label>Medium</Label>
+        </Option>
+        <Option value="100000002">
+          <Label>Low</Label>
+        </Option>
+      </OptionSet>
+    </Attribute>
+
+    <!-- Status Choice Field -->
+    <Attribute PhysicalName="cr_status">
+      <Type>picklist</Type>
+      <Name>Status</Name>
+      <Description>Workflow status of the FAQ (Draft, Published, Archived)</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <OptionSet Name="cr_faq_status">
+        <Option value="100000000">
+          <Label>Draft</Label>
+        </Option>
+        <Option value="100000001">
+          <Label>Published</Label>
+        </Option>
+        <Option value="100000002">
+          <Label>Archived</Label>
+        </Option>
+      </OptionSet>
+    </Attribute>
+
+    <!-- Standard Metadata Fields -->
+    <Attribute PhysicalName="createdon">
+      <Type>datetime</Type>
+      <Name>Created On</Name>
+      <Description>Date and time when the record was created.</Description>
+    </Attribute>
+    <Attribute PhysicalName="modifiedon">
+      <Type>datetime</Type>
+      <Name>Modified On</Name>
+      <Description>Date and time when the record was last modified.</Description>
+    </Attribute>
+    <Attribute PhysicalName="statecode">
+      <Type>state</Type>
+      <Name>Status</Name>
+      <Description>State of the FAQ record (Active/Inactive)</Description>
+    </Attribute>
+    <Attribute PhysicalName="statuscode">
+      <Type>status</Type>
+      <Name>Status Reason</Name>
+      <Description>Reason for the status of the FAQ record</Description>
+    </Attribute>
+  </Attributes>
+  <Relationships>
+    <ManyToOneRelationship Name="cr_faq_category">
+      <ReferencingEntity>cr_FAQ</ReferencingEntity>
+      <ReferencedEntity>cr_FAQCategory</ReferencedEntity>
+      <ReferencingAttribute>cr_categoryid</ReferencingAttribute>
+      <ReferencedAttribute>cr_faqcategoryid</ReferencedAttribute>
+      <CascadeBehavior>
+        <Assign>NoCascade</Assign>
+        <Delete>Restrict</Delete>
+        <Merge>NoCascade</Merge>
+        <Reparent>NoCascade</Reparent>
+        <Share>NoCascade</Share>
+        <Unshare>NoCascade</Unshare>
+      </CascadeBehavior>
+    </ManyToOneRelationship>
+  </Relationships>
+</Entity>

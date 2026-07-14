@@ -1,0 +1,290 @@
+- UserPortalScreen As screen:
+    Fill: =gblTheme.Background
+    OnVisible: |
+      =// Refresh Dataverse tables to ensure latest updates are available
+       Refresh(cr_FAQs);
+       Refresh(cr_FAQCategories);
+       
+       // Initialize local states
+       UpdateContext({locSearchQuery: ""});
+       UpdateContext({locSelectedCategory: Blank()});
+       
+       // Track visit for analytics in local session variable
+       Collect(colNavStack, { Screen: "UserPortalScreen" });
+
+    Controls:
+      # Main Header
+      - HeaderContainer As groupContainer:
+          Width: =Parent.Width
+          Height: =80
+          Fill: =gblTheme.Primary
+          BorderThickness: =0
+          
+          Controls:
+            - AppTitle As label:
+                Text: ="Enterprise FAQ Copilot"
+                Font: =gblFont.Family
+                Size: =20
+                FontWeight: =FontWeight.Bold
+                Color: =ColorValue("#FFFFFF")
+                X: =20
+                Y: =25
+                Width: =300
+                Height: =30
+
+            - UserProfileCard As groupContainer:
+                X: =Parent.Width - 300
+                Y: =15
+                Width: =280
+                Height: =50
+                
+                Controls:
+                  - UserAvatar As image:
+                      Image: =gblCurrentUser.Image
+                      Width: =40
+                      Height: =40
+                      X: =10
+                      Y: =5
+                      RadiusTopLeft: =20
+                      RadiusTopRight: =20
+                      RadiusBottomLeft: =20
+                      RadiusBottomRight: =20
+                  
+                  - UserText As label:
+                      Text: =gblCurrentUser.FullName
+                      Color: =ColorValue("#FFFFFF")
+                      Size: =12
+                      X: =60
+                      Y: =15
+                      Width: =120
+                      Height: =20
+
+                  - AdminButton As button:
+                      Text: ="Admin"
+                      Visible: =gblIsAdmin
+                      X: =190
+                      Y: =5
+                      Width: =80
+                      Height: =40
+                      Fill: =gblTheme.Accent
+                      HoverFill: =gblTheme.AccentHover
+                      OnSelect: =Navigate(AdminDashboardScreen, ScreenTransition.Fade)
+
+      # Hero Search Area
+      - HeroContainer As groupContainer:
+          Y: =80
+          Width: =Parent.Width
+          Height: =180
+          Fill: =gblTheme.PrimaryLight
+          
+          Controls:
+            - HeroSubtitle As label:
+                Text: ="How can we help you today?"
+                Color: =ColorValue("#FFFFFF")
+                Size: =gblFont.SizeTitle
+                FontWeight: =FontWeight.Semibold
+                X: =50
+                Y: =30
+                Width: =600
+                Height: =40
+                
+            - SearchBox As text:
+                Default: =""
+                DelayOutput: =true
+                HintText: ="Search over 4,000 FAQs by keywords, question details, or tags..."
+                X: =50
+                Y: =85
+                Width: =Parent.Width - 100
+                Height: =50
+                Size: =14
+                Fill: =gblTheme.CardBg
+                BorderColor: =gblTheme.BorderColor
+                BorderThickness: =1
+                OnSelect: |
+                  =// If user presses enter or text changes
+                  If(!IsBlank(Self.Text), 
+                      // Add to recents, keep only top 10
+                      Remove(colRecentSearches, First(Filter(colRecentSearches, Query = Self.Text)));
+                      Insert(colRecentSearches, 1, { Query: Self.Text, Timestamp: Now() });
+                      SaveData(colRecentSearches, "EnterpriseFAQRecentSearches");
+                  )
+
+      # Main Content Panel
+      - MainBodyContainer As groupContainer:
+          Y: =260
+          Width: =Parent.Width
+          Height: =Parent.Height - 260
+          Layout: =Layout.Horizontal
+          
+          Controls:
+            # Left Column (Categories & FAQ Search Results Gallery)
+            - ContentLeftPane As groupContainer:
+                Width: =Parent.Width * 0.70
+                Height: =Parent.Height
+                PaddingLeft: =40
+                PaddingRight: =20
+                PaddingTop: =20
+
+                Controls:
+                  # Horizontal Category Selector
+                  - CategoryGallery As gallery:
+                      Items: |
+                        =// Fetch categories from Dataverse, prepend an "All" option
+                         Table({cr_faqcategoryid: Blank(), cr_name: "All Category"}) 
+                         As _all_
+                         Collection 
+                         cr_FAQCategories
+                      Layout: =Layout.Horizontal
+                      Height: =45
+                      Width: =Parent.Width
+                      X: =0
+                      Y: =0
+                      TemplateSize: =150
+                      
+                      Controls:
+                        - CategoryPill As button:
+                            Text: =ThisItem.cr_name
+                            Width: =Parent.TemplateWidth - 10
+                            Height: =35
+                            Fill: =If( (IsBlank(locSelectedCategory) && ThisItem.cr_name = "All Category") || (locSelectedCategory.cr_faqcategoryid = ThisItem.cr_faqcategoryid), gblTheme.Accent, gblTheme.GrayBg )
+                            Color: =If( (IsBlank(locSelectedCategory) && ThisItem.cr_name = "All Category") || (locSelectedCategory.cr_faqcategoryid = ThisItem.cr_faqcategoryid), ColorValue("#FFFFFF"), gblTheme.TextDark )
+                            RadiusTopLeft: =18
+                            RadiusTopRight: =18
+                            RadiusBottomLeft: =18
+                            RadiusBottomRight: =18
+                            OnSelect: |
+                              =If(ThisItem.cr_name = "All Category", 
+                                  UpdateContext({locSelectedCategory: Blank()}),
+                                  UpdateContext({locSelectedCategory: ThisItem})
+                               )
+
+                  # FAQ Results List
+                  - FAQGallery As gallery:
+                      # Fully delegable search query on Dataverse table
+                      Items: |
+                        =Search(
+                            Filter(
+                                cr_FAQs, 
+                                cr_status = 'cr_faq_status (cr_FAQ)'.Published && 
+                                (IsBlank(locSelectedCategory) || cr_categoryid.cr_faqcategoryid = locSelectedCategory.cr_faqcategoryid)
+                            ),
+                            SearchBox.Text,
+                            "cr_question", "cr_keywords", "cr_tags"
+                         )
+                      Y: =60
+                      Width: =Parent.Width
+                      Height: =Parent.Height - 80
+                      TemplateSize: =90
+                      
+                      Controls:
+                        - FAQCard As groupContainer:
+                            Width: =Parent.Width
+                            Height: =80
+                            Fill: =gblTheme.CardBg
+                            BorderThickness: =1
+                            BorderColor: =gblTheme.BorderColor
+                            
+                            Controls:
+                              - FAQQuestion As label:
+                                  Text: =ThisItem.cr_question
+                                  FontWeight: =FontWeight.Semibold
+                                  Size: =14
+                                  Color: =gblTheme.TextDark
+                                  X: =15
+                                  Y: =10
+                                  Width: =Parent.Width - 120
+                                  Height: =25
+                                  
+                              - FAQMeta As label:
+                                  Text: =ThisItem.cr_categoryid.cr_name & " • " & ThisItem.cr_tags
+                                  Size: =11
+                                  Color: =gblTheme.TextMuted
+                                  X: =15
+                                  Y: =40
+                                  Width: =400
+                                  Height: =20
+                                  
+                              - FAQArrow As icon:
+                                  Icon: =Icon.ChevronRight
+                                  Color: =gblTheme.TextMuted
+                                  X: =Parent.Width - 40
+                                  Y: =25
+                                  Width: =20
+                                  Height: =20
+                                  OnSelect: |
+                                    =Set(gblSelectedFAQ, ThisItem);
+                                     Navigate(FAQDetailsScreen, ScreenTransition.Cover)
+
+            # Right Column (Recents and Favorites)
+            - ContentRightPane As groupContainer:
+                Width: =Parent.Width * 0.30
+                Height: =Parent.Height
+                PaddingLeft: =20
+                PaddingRight: =40
+                PaddingTop: =20
+                
+                Controls:
+                  # Recent Searches List
+                  - RecentsHeader As label:
+                      Text: ="Recent Searches"
+                      FontWeight: =FontWeight.Bold
+                      Size: =14
+                      Color: =gblTheme.TextDark
+                      Height: =25
+
+                  - RecentsGallery As gallery:
+                      Items: =colRecentSearches
+                      Y: =30
+                      Height: =150
+                      Width: =Parent.Width
+                      TemplateSize: =35
+                      Controls:
+                        - RecentItemText As label:
+                            Text: =ThisItem.Query
+                            Size: =12
+                            Color: =gblTheme.Accent
+                            Width: =Parent.Width - 40
+                            Height: =25
+                            OnSelect: =Reset(SearchBox); Reset(SearchBox, ThisItem.Query)
+                        - DeleteRecentBtn As icon:
+                            Icon: =Icon.Cancel
+                            Color: =gblTheme.Error
+                            X: =Parent.Width - 30
+                            Width: =15
+                            Height: =15
+                            OnSelect: |
+                              =Remove(colRecentSearches, ThisItem);
+                               SaveData(colRecentSearches, "EnterpriseFAQRecentSearches")
+
+                  # Favorites List
+                  - FavoritesHeader As label:
+                      Text: ="My Favorites"
+                      FontWeight: =FontWeight.Bold
+                      Size: =14
+                      Color: =gblTheme.TextDark
+                      Y: =200
+                      Height: =25
+
+                  - FavoritesGallery As gallery:
+                      Items: =colFavorites
+                      Y: =230
+                      Height: =Parent.Height - 250
+                      Width: =Parent.Width
+                      TemplateSize: =60
+                      Controls:
+                        - FavoriteCard As groupContainer:
+                            Width: =Parent.Width
+                            Height: =50
+                            Fill: =gblTheme.CardBg
+                            
+                            Controls:
+                              - FavoriteTitle As label:
+                                  Text: =ThisItem.cr_question
+                                  Size: =12
+                                  FontWeight: =FontWeight.Semibold
+                                  Color: =gblTheme.TextDark
+                                  Width: =Parent.Width - 30
+                                  Height: =35
+                                  OnSelect: |
+                                    =Set(gblSelectedFAQ, ThisItem);
+                                     Navigate(FAQDetailsScreen, ScreenTransition.Cover)

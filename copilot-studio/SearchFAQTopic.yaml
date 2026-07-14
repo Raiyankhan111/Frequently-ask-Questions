@@ -1,0 +1,116 @@
+kind: AdaptiveDialog
+beginDialog:
+  - kind: OnIntent
+    id: search_faq_intent
+    intent: SearchFAQ
+    actions:
+      - kind: Ask
+        id: ask_user_query
+        placeholder: e.g., How do I connect to VPN?
+        prompt: "What question or topic would you like me to look up in our database?"
+        variable: Topic.UserQuery
+
+      # Run search via Power Automate flow
+      - kind: CallFlow
+        id: call_search_flow
+        flowId: "cr_SearchFAQFlow"
+        input:
+          query: Topic.UserQuery
+          email: System.User.Email
+        output:
+          answer: Topic.SearchResultAnswer
+          category: Topic.SearchResultCategory
+          confidence: Topic.SearchResultConfidence
+          faqid: Topic.SearchResultFAQID
+          success: Topic.SearchResultSuccess
+
+      # Condition check based on flow result
+      - kind: ConditionGroup
+        id: check_search_success
+        conditions:
+          - condition: Topic.SearchResultSuccess = true && Topic.SearchResultConfidence >= 0.70
+            actions:
+              - kind: SendActivity
+                id: show_answer
+                activity: |
+                  **Answer found in {Topic.SearchResultCategory}:**
+                  
+                  {Topic.SearchResultAnswer}
+                  
+              # Trigger related FAQs dialog, passing category as input
+              - kind: BeginDialog
+                id: trigger_related_faqs
+                dialog: SuggestRelatedFAQs
+                input:
+                  category: Topic.SearchResultCategory
+                  excludeId: Topic.SearchResultFAQID
+
+              # Log successful chat log
+              - kind: CallFlow
+                id: log_success_flow
+                flowId: "cr_LogConversationFlow"
+                input:
+                  sessionid: System.Conversation.Id
+                  query: Topic.UserQuery
+                  response: Topic.SearchResultAnswer
+                  confidence: Topic.SearchResultConfidence
+                  answered: true
+                  email: System.User.Email
+
+          - condition: Topic.SearchResultSuccess = true && Topic.SearchResultConfidence < 0.70 && Topic.SearchResultConfidence >= 0.40
+            actions:
+              # Low confidence: Prompt with possible match and ask if helpful
+              - kind: SendActivity
+                id: low_confidence_warning
+                activity: "I found a possible answer, but I want to make sure it matches your request."
+              
+              - kind: Ask
+                id: ask_if_match_correct
+                prompt: "Did you mean: '{Topic.SearchResultAnswer}'?"
+                variable: Topic.UserConfirmedMatch
+                choices:
+                  - label: Yes
+                  - label: No
+
+              - kind: ConditionGroup
+                id: check_user_confirmation
+                conditions:
+                  - condition: Topic.UserConfirmedMatch = "Yes"
+                    actions:
+                      - kind: SendActivity
+                        id: confirm_positive
+                        activity: "Excellent! Let me log that this is the correct answer."
+                      # Log chat log
+                      - kind: CallFlow
+                        id: log_confirmed_flow
+                        flowId: "cr_LogConversationFlow"
+                        input:
+                          sessionid: System.Conversation.Id
+                          query: Topic.UserQuery
+                          response: Topic.SearchResultAnswer
+                          confidence: Topic.SearchResultConfidence
+                          answered: true
+                          email: System.User.Email
+
+                  - condition: Topic.UserConfirmedMatch = "No"
+                    actions:
+                      # Redirect to fallback
+                      - kind: BeginDialog
+                        id: redirect_to_fallback
+                        dialog: FallbackTopic
+
+          - condition: true # Else
+            actions:
+              - kind: BeginDialog
+                id: redirect_to_fallback_else
+                dialog: FallbackTopic
+
+# Trigger phrases used to recognize intent in Copilot Studio's NLU engine
+triggerPhrases:
+  - "search the FAQ"
+  - "look up a question"
+  - "find help on"
+  - "FAQ database"
+  - "search database"
+  - "I need an answer for"
+  - "query the database"

@@ -1,0 +1,54 @@
+- App As app:
+    OnStart: |
+      =// ==========================================
+       // ENTERPRISE FAQ COPILOT - GLOBAL ONSTART
+       // ==========================================
+       
+       // 1. Initialize Design System Color Palette (Premium Blue/Gold Theme)
+       Set(gblTheme, {
+           Primary: ColorValue("#0F172A"),       // Slate 900 (Deep/Premium Dark)
+           PrimaryLight: ColorValue("#1E293B"),  // Slate 800
+           Accent: ColorValue("#3B82F6"),        // Blue 500
+           AccentHover: ColorValue("#2563EB"),   // Blue 600
+           Background: ColorValue("#F8FAFC"),    // Slate 50
+           CardBg: ColorValue("#FFFFFF"),        // Pure White
+           BorderColor: ColorValue("#E2E8F0"),   // Slate 200
+           TextDark: ColorValue("#0F172A"),      // Slate 900
+           TextMuted: ColorValue("#64748B"),     // Slate 500
+           Success: ColorValue("#10B981"),       // Emerald 500
+           Error: ColorValue("#EF4444"),         // Red 500
+           Warning: ColorValue("#F59E0B"),       // Amber 500
+           GrayBg: ColorValue("#F1F5F9")         // Slate 100
+       });
+
+       // 2. Initialize Typography Style
+       Set(gblFont, {
+           Family: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+           SizeTitle: 24,
+           SizeHeader: 18,
+           SizeBody: 14,
+           SizeSmall: 12
+       });
+
+       // 3. Load Local Favorites and Recent Searches from Device Cache
+       Clear(colFavorites);
+       LoadData(colFavorites, "EnterpriseFAQFavorites", true);
+
+       Clear(colRecentSearches);
+       LoadData(colRecentSearches, "EnterpriseFAQRecentSearches", true);
+
+       // 4. Initialize User Profile Settings
+       Set(gblCurrentUser, User());
+       
+       // 5. Check if User is Admin (Lookup in a list of Admin Emails or via security group - stubbed for demo)
+       // In production, this can check Azure AD groups via Office365Groups connector.
+       Set(gblIsAdmin, gblCurrentUser.Email = "admin@company.com" || EndingWith(gblCurrentUser.Email, "@company.com"));
+
+       // 6. Navigation Stack for Back button
+       ClearCollect(colNavStack, { Screen: "UserPortalScreen" });
+    
+    Formulas: |
+      =// Global named formulas for clean, centralized logic
+       UserDisplayName = gblCurrentUser.FullName;
+       UserEmailAddress = gblCurrentUser.Email;
+       IsUserAdmin = gblIsAdmin;

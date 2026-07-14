@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Entity>
+  <Name LocalizedName="FAQ Category" OriginalName="cr_FAQCategory">cr_FAQCategory</Name>
+  <ObjectTypeCode>10100</ObjectTypeCode>
+  <Attributes>
+    <!-- Primary Key -->
+    <Attribute PhysicalName="cr_faqcategoryid">
+      <Type>uniqueidentifier</Type>
+      <Name>FAQ Category ID</Name>
+      <Description>Unique identifier for entity instances</Description>
+      <RequiredLevel>SystemRequired</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+    </Attribute>
+    
+    <!-- Primary Name Field -->
+    <Attribute PhysicalName="cr_name">
+      <Type>nvarchar</Type>
+      <Length>100</Length>
+      <Name>Category Name</Name>
+      <Description>The name of the FAQ Category or Subcategory.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+      <IsSearchable>1</IsSearchable>
+    </Attribute>
+
+    <!-- Description -->
+    <Attribute PhysicalName="cr_description">
+      <Type>ntext</Type>
+      <Length>2000</Length>
+      <Name>Description</Name>
+      <Description>Detailed description of what this category covers.</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+    </Attribute>
+
+    <!-- Self-Referencing Lookup for Subcategories -->
+    <Attribute PhysicalName="cr_parentcategoryid">
+      <Type>lookup</Type>
+      <ReferencedEntityName>cr_FAQCategory</ReferencedEntityName>
+      <Name>Parent Category</Name>
+      <Description>Parent category if this record represents a subcategory.</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+    </Attribute>
+
+    <!-- Standard Metadata Fields -->
+    <Attribute PhysicalName="createdon">
+      <Type>datetime</Type>
+      <Name>Created On</Name>
+      <Description>Date and time when the record was created.</Description>
+    </Attribute>
+    <Attribute PhysicalName="modifiedon">
+      <Type>datetime</Type>
+      <Name>Modified On</Name>
+      <Description>Date and time when the record was last modified.</Description>
+    </Attribute>
+    <Attribute PhysicalName="statecode">
+      <Type>state</Type>
+      <Name>Status</Name>
+      <Description>Status of the FAQ Category (Active/Inactive)</Description>
+    </Attribute>
+    <Attribute PhysicalName="statuscode">
+      <Type>status</Type>
+      <Name>Status Reason</Name>
+      <Description>Reason for the status of the FAQ Category</Description>
+    </Attribute>
+  </Attributes>
+  <Relationships>
+    <ManyToOneRelationship Name="cr_faqcategory_parentcategory">
+      <ReferencingEntity>cr_FAQCategory</ReferencingEntity>
+      <ReferencedEntity>cr_FAQCategory</ReferencedEntity>
+      <ReferencingAttribute>cr_parentcategoryid</ReferencingAttribute>
+      <ReferencedAttribute>cr_faqcategoryid</ReferencedAttribute>
+      <CascadeBehavior>
+        <Assign>NoCascade</Assign>
+        <Delete>RemoveLink</Delete>
+        <Merge>NoCascade</Merge>
+        <Reparent>NoCascade</Reparent>
+        <Share>NoCascade</Share>
+        <Unshare>NoCascade</Unshare>
+      </CascadeBehavior>
+    </ManyToOneRelationship>
+  </Relationships>
+</Entity>

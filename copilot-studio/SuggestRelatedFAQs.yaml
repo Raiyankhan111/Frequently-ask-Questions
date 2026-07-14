@@ -1,0 +1,61 @@
+kind: AdaptiveDialog
+id: SuggestRelatedFAQs
+parameters:
+  - name: category
+    type: String
+    required: true
+  - name: excludeId
+    type: String
+    required: false
+beginDialog:
+  - actions:
+      # Retrieve related FAQs in the same category
+      - kind: CallFlow
+        id: call_related_flow
+        flowId: "cr_GetRelatedFAQsFlow"
+        input:
+          category: Dialog.category
+          excludeId: Dialog.excludeId
+        output:
+          q1: Dialog.RelatedQ1
+          q2: Dialog.RelatedQ2
+          q3: Dialog.RelatedQ3
+          hasRelated: Dialog.HasRelated
+
+      - kind: ConditionGroup
+        id: check_has_related
+        conditions:
+          - condition: Dialog.HasRelated = true
+            actions:
+              - kind: SendActivity
+                activity: "Here are some other questions you might find helpful in the **{Dialog.category}** category:"
+                
+              # Offer choices to user to immediately read another FAQ
+              - kind: Ask
+                id: ask_related_selection
+                prompt: "Select a question to view the answer:"
+                variable: Topic.SelectedRelatedQuestion
+                choices:
+                  - label: "{Dialog.RelatedQ1}"
+                  - label: "{Dialog.RelatedQ2}"
+                  - label: "{Dialog.RelatedQ3}"
+                  - label: "None of these"
+
+              - kind: ConditionGroup
+                conditions:
+                  - condition: Topic.SelectedRelatedQuestion != "None of these"
+                    actions:
+                      # If user selects one, trigger Search FAQ flow directly with selected question
+                      - kind: SetVariable
+                        variable: Topic.UserQuery
+                        value: Topic.SelectedRelatedQuestion
+                      - kind: BeginDialog
+                        dialog: SearchFAQTopic
+                  - condition: true
+                    actions:
+                      - kind: SendActivity
+                        activity: "Let me know if you need help with anything else!"
+          - condition: true
+            actions:
+              # No related questions found
+              - kind: EndDialog

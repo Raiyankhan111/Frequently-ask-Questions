@@ -1,0 +1,142 @@
+{
+  "$schema": "https://schema.cognitive.microsoft.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AdminEmail": {
+      "defaultValue": "admin@company.com",
+      "type": "String"
+    },
+    "TeamsChannelId": {
+      "defaultValue": "19:abc123def456@thread.tacv2",
+      "type": "String"
+    },
+    "TeamsGroupId": {
+      "defaultValue": "g123-group-id",
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "PowerApp",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "title": "Question Text"
+            },
+            "comments": {
+              "type": "string",
+              "title": "User Comments"
+            },
+            "userEmail": {
+              "type": "string",
+              "title": "User Email"
+            }
+          },
+          "required": ["question", "comments", "userEmail"]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Send_Outlook_Alert_Email": {
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_office365",
+          "operationId": "SendEmailV2",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+        },
+        "parameters": {
+          "emailMessage/To": "@parameters('AdminEmail')",
+          "emailMessage/Subject": "ALERT: Enterprise FAQ Missing/Low-Quality Content Reported",
+          "emailMessage/Body": "<p>An FAQ alert has been triggered by a user.</p><ul><li><b>User Email:</b> @{triggerBody()?['userEmail']}</li><li><b>User Question:</b> @{triggerBody()?['question']}</li><li><b>User Comments/Feedback:</b> @{triggerBody()?['comments']}</li></ul><p>Please review this feedback in the Admin Portal and update the FAQ repository accordingly.</p>",
+          "emailMessage/Importance": "High"
+        }
+      }
+    },
+    "Post_Adaptive_Card_to_Teams": {
+      "runAfter": {
+        "Send_Outlook_Alert_Email": ["Succeeded"]
+      },
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_teams",
+          "operationId": "PostCardToConversation",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams"
+        },
+        "parameters": {
+          "poster": "Flow bot",
+          "location": "Channel",
+          "group": "@parameters('TeamsGroupId')",
+          "channel": "@parameters('TeamsChannelId')",
+          "body": {
+            "type": "AdaptiveCard",
+            "body": [
+              {
+                "type": "TextBlock",
+                "size": "Medium",
+                "weight": "Bolder",
+                "text": "🚨 FAQ Escalation Alert"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "Question:",
+                    "value": "@{triggerBody()?['question']}"
+                  },
+                  {
+                    "title": "Comments:",
+                    "value": "@{triggerBody()?['comments']}"
+                  },
+                  {
+                    "title": "User:",
+                    "value": "@{triggerBody()?['userEmail']}"
+                  }
+                ]
+              }
+            ],
+            "actions": [
+              {
+                "type": "Action.OpenUrl",
+                "title": "Open Admin Dashboard",
+                "url": "https://apps.powerapps.com/play/faq-admin-dashboard"
+              }
+            ],
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "version": "1.4"
+          }
+        }
+      }
+    },
+    "Respond_to_PowerApp": {
+      "runAfter": {
+        "Post_Adaptive_Card_to_Teams": ["Succeeded"]
+      },
+      "type": "Response",
+      "inputs": {
+        "statusCode": 200,
+        "body": {
+          "status": "Success",
+          "message": "Admin and Teams notifications successfully broadcasted."
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

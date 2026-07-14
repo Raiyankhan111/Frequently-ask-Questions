@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.cognitive.microsoft.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "faqid": {
+              "type": "string",
+              "title": "FAQ Record ID"
+            },
+            "ishelpful": {
+              "type": "boolean",
+              "title": "Is Helpful"
+            },
+            "comments": {
+              "type": "string",
+              "title": "User Comments"
+            },
+            "email": {
+              "type": "string",
+              "title": "User Email"
+            }
+          },
+          "required": ["faqid", "ishelpful"]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Write_to_Dataverse_Feedback": {
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_commondataserviceforapps",
+          "operationId": "CreateRecord",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+        },
+        "parameters": {
+          "entityName": "cr_FAQFeedbacks",
+          "item/cr_faqid@odata.bind": "/cr_FAQs(@{triggerBody()?['faqid']})",
+          "item/cr_ishelpful": "@triggerBody()?['ishelpful']",
+          "item/cr_comments": "@triggerBody()?['comments']",
+          "item/cr_useremail": "@triggerBody()?['email']"
+        }
+      }
+    },
+    "Respond_Success": {
+      "runAfter": {
+        "Write_to_Dataverse_Feedback": ["Succeeded"]
+      },
+      "type": "Response",
+      "inputs": {
+        "statusCode": 200,
+        "body": {
+          "feedbackid": "@outputs('Write_to_Dataverse_Feedback')?['body/cr_faqfeedbackid']",
+          "status": "Success"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "feedbackid": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise FAQ Center Hub</title>
+  
+  <!-- Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-weight/6.4.0/css/all.min.css">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Gradients -->
+  <div class="glow-bg glow-blue"></div>
+  <div class="glow-bg glow-purple"></div>
+
+  <!-- Main Container -->
+  <div class="dashboard-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fa-solid fa-robot"></i>
+          <span>FAQ Copilot</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-tab="home" id="btn-tab-home">
+          <i class="fa-solid fa-house"></i>
+          <span>Home Hub</span>
+        </button>
+        <button class="nav-btn" data-tab="search" id="btn-tab-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>FAQ Search</span>
+        </button>
+        <button class="nav-btn" data-tab="powerapp" id="btn-tab-powerapp">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+          <span>Power App Portal</span>
+        </button>
+        <button class="nav-btn" data-tab="copilot" id="btn-tab-copilot">
+          <i class="fa-solid fa-comments"></i>
+          <span>Chat with Bot</span>
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <a href="https://github.com" target="_blank" class="footer-link">
+          <i class="fa-brands fa-github"></i>
+          <span>Documentation</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="topbar-search">
+          <i class="fa-solid fa-search"></i>
+          <input type="text" id="global-search" placeholder="Type to search FAQs across departments...">
+        </div>
+        <div class="topbar-profile">
+          <span class="profile-badge">PROD ENVIRONMENT</span>
+          <div class="profile-user">
+            <div class="user-avatar">
+              <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <span>Corporate Account</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB: Home Hub -->
+      <section class="tab-pane active" id="tab-home">
+        <div class="hero-section">
+          <h1>Enterprise Knowledge Hub</h1>
+          <p>Powered by Microsoft Power Platform, Copilot Studio, and Dataverse search indexers.</p>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-title">Connected FAQ Dataset</span>
+              <span class="stat-value">4,000+ Records</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">Target SLA Response</span>
+              <span class="stat-value">&lt; 1.8 seconds</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">Active Concurrent Users</span>
+              <span class="stat-value">50+ Users</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">AI Engine Accuracy</span>
+              <span class="stat-value">94.8%</span>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title">Get Started with Deployments</h2>
+        <div class="features-grid">
+          <div class="feature-card" onclick="switchTab('search')">
+            <i class="fa-solid fa-database feature-icon"></i>
+            <h3>Interactive FAQ Search</h3>
+            <p>Test the client-side search indexing demo locally on Netlify with simulated Dataverse queries.</p>
+            <span class="card-action">Launch Search Console <i class="fa-solid fa-arrow-right"></i></span>
+          </div>
+          <div class="feature-card" onclick="switchTab('powerapp')">
+            <i class="fa-solid fa-mobile-screen feature-icon"></i>
+            <h3>Power Apps Canvas Embed</h3>
+            <p>Access the full responsive user portal, favorites syncing, and the admin panel iframe.</p>
+            <span class="card-action">Open Canvas Frame <i class="fa-solid fa-arrow-right"></i></span>
+          </div>
+          <div class="feature-card" onclick="switchTab('copilot')">
+            <i class="fa-solid fa-message-bot feature-icon"></i>
+            <h3>Copilot Studio Agent</h3>
+            <p>Chat via conversational AI, query the entire knowledge base, and trigger automations.</p>
+            <span class="card-action">Start Conversation <i class="fa-solid fa-arrow-right"></i></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: FAQ Search Console -->
+      <section class="tab-pane" id="tab-search">
+        <div class="search-controls">
+          <div class="filter-group">
+            <button class="filter-pill active" data-category="All">All Categories</button>
+            <button class="filter-pill" data-category="IT Support">IT Support</button>
+            <button class="filter-pill" data-category="HR & Policies">HR & Policies</button>
+            <button class="filter-pill" data-category="Finance & Expenses">Finance & Expenses</button>
+            <button class="filter-pill" data-category="Facilities & Workspace">Facilities</button>
+          </div>
+        </div>
+        
+        <div class="faq-list" id="faq-results-list">
+          <!-- Dynamically populated by app.js -->
+          <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading FAQ database...</div>
+        </div>
+      </section>
+
+      <!-- TAB: Power Apps Embed -->
+      <section class="tab-pane" id="tab-powerapp">
+        <div class="embed-header">
+          <div>
+            <h3>Microsoft Power Apps Canvas Embedded Window</h3>
+            <p class="subtitle">Complete administrative CRUD forms, feedback trackers, and dashboard visualizations.</p>
+          </div>
+          <button class="btn btn-primary" onclick="loadPowerApp()">
+            <i class="fa-solid fa-rotate"></i> Reload IFrame
+          </button>
+        </div>
+        
+        <div class="iframe-container" id="powerapps-container">
+          <div class="iframe-placeholder">
+            <i class="fa-solid fa-mobile-button placeholder-icon"></i>
+            <h4>Connect Your Power Apps Application</h4>
+            <p>Enter your Power Apps Web Link or App ID in <code>web/app.js</code> to render your live Canvas App securely inside this Netlify dashboard.</p>
+            <button class="btn btn-accent" onclick="showConfigPrompt('app')">Configure App Connection</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Copilot Studio Chatbot -->
+      <section class="tab-pane" id="tab-copilot">
+        <div class="embed-header">
+          <div>
+            <h3>Copilot Studio Web Chat Terminal</h3>
+            <p class="subtitle">Interact with natural language processing models, escalations, and automated notifications.</p>
+          </div>
+          <button class="btn btn-primary" onclick="loadCopilotBot()">
+            <i class="fa-solid fa-arrows-rotate"></i> Reset Conversation
+          </button>
+        </div>
+
+        <div class="chat-wrapper">
+          <div class="chat-container-panel" id="webchat-container">
+            <div class="iframe-placeholder">
+              <i class="fa-solid fa-comments placeholder-icon"></i>
+              <h4>Connect Your Copilot Studio Webchat</h4>
+              <p>Enter your Bot Direct Line Secret or Token URL in <code>web/app.js</code> to link your deployed Copilot Studio chatbot.</p>
+              <button class="btn btn-accent" onclick="showConfigPrompt('bot')">Configure Bot Connection</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Config modal prompt -->
+  <div class="modal" id="config-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Configure Connection</h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-field">
+          <label id="input-label" for="config-value">Connection URL / Token</label>
+          <input type="text" id="config-value" placeholder="https://...">
+        </div>
+        <p class="input-help">This configuration is stored in your browser's local storage for development demo purposes.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-accent" onclick="saveConnectionConfig()">Save Connection</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Microsoft Bot Framework WebChat CDN -->
+  <script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
+  <!-- Application JS Script -->
+  <script src="app.js"></script>
+</body>
+</html>

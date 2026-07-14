@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Entity>
+  <Name LocalizedName="FAQ Feedback" OriginalName="cr_FAQFeedback">cr_FAQFeedback</Name>
+  <ObjectTypeCode>10102</ObjectTypeCode>
+  <Attributes>
+    <!-- Primary Key -->
+    <Attribute PhysicalName="cr_faqfeedbackid">
+      <Type>uniqueidentifier</Type>
+      <Name>FAQ Feedback ID</Name>
+      <Description>Unique identifier for entity instances</Description>
+      <RequiredLevel>SystemRequired</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>0</IsAuditEnabled>
+    </Attribute>
+    
+    <!-- FAQ Lookup -->
+    <Attribute PhysicalName="cr_faqid">
+      <Type>lookup</Type>
+      <ReferencedEntityName>cr_FAQ</ReferencedEntityName>
+      <Name>FAQ Record</Name>
+      <Description>The FAQ record that this feedback belongs to.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+    </Attribute>
+
+    <!-- Helpfulness Rating (Boolean) -->
+    <Attribute PhysicalName="cr_ishelpful">
+      <Type>boolean</Type>
+      <Name>Is Helpful</Name>
+      <Description>True if the FAQ was helpful, False if it was not helpful.</Description>
+      <RequiredLevel>Required</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+      <OptionSet Name="cr_feedback_helpful">
+        <Option value="1">
+          <Label>Yes</Label>
+        </Option>
+        <Option value="0">
+          <Label>No</Label>
+        </Option>
+      </OptionSet>
+    </Attribute>
+
+    <!-- User Comments -->
+    <Attribute PhysicalName="cr_comments">
+      <Type>ntext</Type>
+      <Length>2000</Length>
+      <Name>Comments</Name>
+      <Description>User comments on the FAQ or missing information.</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+    </Attribute>
+
+    <!-- User Email/Identifier (String for simplicity across M365) -->
+    <Attribute PhysicalName="cr_useremail">
+      <Type>nvarchar</Type>
+      <Length>150</Length>
+      <Name>User Email</Name>
+      <Description>Email of the user who submitted the feedback.</Description>
+      <RequiredLevel>None</RequiredLevel>
+      <IsSecured>0</IsSecured>
+      <IsAuditEnabled>1</IsAuditEnabled>
+    </Attribute>
+
+    <!-- Standard Metadata Fields -->
+    <Attribute PhysicalName="createdon">
+      <Type>datetime</Type>
+      <Name>Created On</Name>
+      <Description>Date and time when the feedback was submitted.</Description>
+    </Attribute>
+    <Attribute PhysicalName="modifiedon">
+      <Type>datetime</Type>
+      <Name>Modified On</Name>
+      <Description>Date and time when the feedback was last modified.</Description>
+    </Attribute>
+    <Attribute PhysicalName="statecode">
+      <Type>state</Type>
+      <Name>Status</Name>
+      <Description>State of the feedback record (Active/Inactive)</Description>
+    </Attribute>
+    <Attribute PhysicalName="statuscode">
+      <Type>status</Type>
+      <Name>Status Reason</Name>
+      <Description>Reason for the status of the feedback record</Description>
+    </Attribute>
+  </Attributes>
+  <Relationships>
+    <ManyToOneRelationship Name="cr_feedback_faq">
+      <ReferencingEntity>cr_FAQFeedback</ReferencingEntity>
+      <ReferencedEntity>cr_FAQ</ReferencedEntity>
+      <ReferencingAttribute>cr_faqid</ReferencingAttribute>
+      <ReferencedAttribute>cr_faqid</ReferencedAttribute>
+      <CascadeBehavior>
+        <Assign>NoCascade</Assign>
+        <Delete>Cascade</Delete>
+        <Merge>NoCascade</Merge>
+        <Reparent>NoCascade</Reparent>
+        <Share>NoCascade</Share>
+        <Unshare>NoCascade</Unshare>
+      </CascadeBehavior>
+    </ManyToOneRelationship>
+  </Relationships>
+</Entity>

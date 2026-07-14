@@ -1,0 +1,92 @@
+[
+  {
+    "FAQID": "1",
+    "Question": "How do I reset my Windows/macOS password?",
+    "Answer": "Go to the Self-Service Password Reset Portal at identity.company.com, enter your corporate email, and complete the multi-factor authentication (MFA) check on your phone. Passwords must be 16+ characters and include numbers and symbols.",
+    "Category": "IT Support",
+    "SubCategory": "Password & Login",
+    "Keywords": "password, reset, credentials, active directory, lock, login",
+    "Tags": "#it;#login;#security",
+    "Priority": "High"
+  },
+  {
+    "FAQID": "2",
+    "Question": "How do I connect to the corporate VPN?",
+    "Answer": "Open the GlobalProtect VPN client on your device. Enter the portal address 'vpn.company.com' and click Connect. Enter your corporate email and password, then approve the authentication request on your Microsoft Authenticator app.",
+    "Category": "IT Support",
+    "SubCategory": "VPN & Network",
+    "Keywords": "vpn, network, remote, access, connect, globalprotect",
+    "Tags": "#it;#network;#remote",
+    "Priority": "High"
+  },
+  {
+    "FAQID": "3",
+    "Question": "How do I request a replacement laptop charger or mouse?",
+    "Answer": "Navigate to the Hardware Request portal at hardware.company.com. Select the accessory you need, input your manager's cost center, and choose your shipping address or local walk-up support desk for collection.",
+    "Category": "IT Support",
+    "SubCategory": "Hardware",
+    "Keywords": "hardware, charger, mouse, keyboard, monitor, replacement",
+    "Tags": "#it;#hardware;#office",
+    "Priority": "Medium"
+  },
+  {
+    "FAQID": "4",
+    "Question": "Where do I submit my business expense reports?",
+    "Answer": "Log into SAP Concur at concur.company.com. Create a new expense report, fill in the date and business purpose, and upload itemized receipts for any transactions above $25. Submit the report to your manager for approval.",
+    "Category": "Finance & Expenses",
+    "SubCategory": "Expense Filing",
+    "Keywords": "expense, concur, receipt, reimbursement, travel, claim",
+    "Tags": "#finance;#expense;#concur",
+    "Priority": "Medium"
+  },
+  {
+    "FAQID": "5",
+    "Question": "How do I request maternity or paternity parental leave?",
+    "Answer": "Submit a formal Leave Request in Workday under 'Time Off > Leave of Absence'. Once submitted, contact the HR Benefits team at benefits@company.com to discuss paid coverage periods and required medical documentation.",
+    "Category": "HR & Policies",
+    "SubCategory": "PTO & Leaves",
+    "Keywords": "leave, pto, parent, baby, maternity, paternity, birth, workday",
+    "Tags": "#hr;#pto;#leave",
+    "Priority": "High"
+  },
+  {
+    "FAQID": "6",
+    "Question": "What is the maximum number of vacation days I can carry over?",
+    "Answer": "Employees can carry over a maximum of 5 unused PTO days into the next calendar year. Any unused vacation days above this limit will be automatically forfeited on December 31st, in compliance with standard company guidelines.",
+    "Category": "HR & Policies",
+    "SubCategory": "PTO & Leaves",
+    "Keywords": "carryover, pto, vacation, holiday, carry, limit",
+    "Tags": "#hr;#pto;#leave",
+    "Priority": "Medium"
+  },
+  {
+    "FAQID": "7",
+    "Question": "Where can I download my annual W-2 tax statement?",
+    "Answer": "Your W-2 forms are hosted securely in Workday. Go to the 'Pay' app dashboard, select 'Tax Documents', select the appropriate tax year, and click the 'View/Print' button to download your official PDF copy.",
+    "Category": "HR & Policies",
+    "SubCategory": "Payroll & Taxes",
+    "Keywords": "w2, tax, payroll, pay, workday, salary, statement",
+    "Tags": "#hr;#payroll;#taxes",
+    "Priority": "High"
+  },
+  {
+    "FAQID": "8",
+    "Question": "How do I register an external visitor for the office?",
+    "Answer": "Use the Envoy Visitor Management app on your phone or browser. Enter the visitor's full name, company, email, and arrival date. They will receive an email invite with safety terms and Wi-Fi instructions to check in at the front desk.",
+    "Category": "Facilities & Workspace",
+    "SubCategory": "Office Access",
+    "Keywords": "visitor, access, guest, badge, envoy, register",
+    "Tags": "#facilities;#access;#security",
+    "Priority": "Medium"
+  },
+  {
+    "FAQID": "9",
+    "Question": "How do I book a conference room for a team meeting?",
+    "Answer": "Open your Outlook Calendar and create a new meeting invitation. Under Location, search for available conference rooms. You can filter by building floor and capacity, add the room, and send the invite to reserve it.",
+    "Category": "Facilities & Workspace",
+    "SubCategory": "Conference Rooms",
+    "Keywords": "room, booking, meeting, calendar, outlook, boardroom, schedule",
+    "Tags": "#facilities;#meeting;#booking",
+    "Priority": "Low"
+  }
+]
